@@ -12,7 +12,7 @@ Class {
 	#tag : 'Operation'
 }
 
-{ #category : 'accessing' }
+{ #category : 'as yet unclassified' }
 MOPSuperSendOperation class >> selector: aSelector [
 
 	^ self new
@@ -29,13 +29,13 @@ MOPSuperSendOperation >> apply: aRFOperation with: anOrderedCollection [
 			  withArguments: aRFOperation arguments ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'as yet unclassified' }
 MOPSuperSendOperation >> selector [
 
 	^ selector
 ]
 
-{ #category : 'accessing' }
+{ #category : 'as yet unclassified' }
 MOPSuperSendOperation >> selector: anObject [
 
 	selector := anObject

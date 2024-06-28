@@ -49,18 +49,9 @@ MOPMetaObject >> initialize [
 { #category : 'install' }
 MOPMetaObject >> installOnAnnonymousClass: aRBMethod [
 
-	| ast selfCode sourceCode instanceProxy |
 	(objectAnoClass includesSelector: aRBMethod selector) ifTrue: [
 		^ self ].
-	instanceProxy := 'proxy' , object hash asString.
-	ast := RBParser parseMethod: aRBMethod sourceCode.
-	selfCode := 'self'.
-	sourceCode := ast formattedCode
-		              copyReplaceAll: selfCode
-		              with: instanceProxy.
-	aRBMethod ast containsReturn ifFalse: [
-		sourceCode := ast sourceCode , '. ^ ' , instanceProxy ].
-	objectAnoClass compile: sourceCode
+	objectAnoClass compile: aRBMethod sourceCode
 ]
 
 { #category : 'instrument' }
@@ -71,6 +62,7 @@ MOPMetaObject >> instrument: aMethod [
 	instrumentationInstalleur object: object.
 
 	self installOnAnnonymousClass: aMethod.
+	instrumentationInstalleur selfEscapeResolve: aMethod  proxy: proxy .
 	instrumentationInstalleur superProblemeResolve: aMethod.
 
 	methodNeedToInstall := objectAnoClass >> aMethod selector.
@@ -99,15 +91,11 @@ MOPMetaObject >> instrumentations [
 { #category : 'accessing' }
 MOPMetaObject >> object: anObject [
 
-	| instanceProxy |
-	
-	instanceProxy := 'proxy', anObject hash asString.
 	
 	object := anObject.
 	objectClass := anObject class.
 	objectAnoClass := objectClass newAnonymousSubclass.
 	objectAnoClass adoptInstance: anObject.
-	objectAnoClass addSlot: instanceProxy asSymbol  => MOPProxyInstanceVariableSlot .
 ]
 
 { #category : 'accessing' }
@@ -119,14 +107,5 @@ MOPMetaObject >> protocol [
 { #category : 'accessing' }
 MOPMetaObject >> proxy: aMOPProxy [
 
-	| instanceProxy |
-	
-	instanceProxy := 'proxy', object hash asString.
-
-	proxy := aMOPProxy.
-	"here we put the proxy as an instance variable of the anonymous class, we do this so as not to return self in the methods of the proxied object but to return the proxy. This allows you to capture all the messages and not leave the MOP"
-	MirrorPrimitives
-		fixedFieldOf: object
-		at: (objectAnoClass slotNamed: instanceProxy) index
-		put: aMOPProxy
+	proxy := aMOPProxy
 ]
