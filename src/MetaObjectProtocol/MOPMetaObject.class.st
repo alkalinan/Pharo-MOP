@@ -54,6 +54,16 @@ MOPMetaObject >> installOnAnnonymousClass: aRBMethod [
 	objectAnoClass compile: aRBMethod sourceCode
 ]
 
+{ #category : 'install' }
+MOPMetaObject >> installOnAnnonymousClass: aRBMethod installeur: instrumentationInstalleur [
+
+	(objectAnoClass includesSelector: aRBMethod selector) ifTrue: [
+		^ self ].
+	instrumentationInstalleur selfEscapeResolve: aRBMethod  proxy: proxy .
+	instrumentationInstalleur superProblemeResolve: aRBMethod.
+	objectAnoClass compile: aRBMethod sourceCode
+]
+
 { #category : 'instrument' }
 MOPMetaObject >> instrument: aMethod [
 
@@ -61,9 +71,8 @@ MOPMetaObject >> instrument: aMethod [
 	instrumentationInstalleur := MOPInstrumentationInstaller new.
 	instrumentationInstalleur object: object.
 
-	self installOnAnnonymousClass: aMethod.
-	instrumentationInstalleur selfEscapeResolve: aMethod  proxy: proxy .
-	instrumentationInstalleur superProblemeResolve: aMethod.
+	self installOnAnnonymousClass: aMethod installeur: instrumentationInstalleur .
+	
 
 	methodNeedToInstall := objectAnoClass >> aMethod selector.
 
