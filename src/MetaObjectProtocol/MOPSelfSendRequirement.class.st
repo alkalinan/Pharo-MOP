@@ -12,5 +12,5 @@ Class {
 { #category : 'verifying' }
 MOPSelfSendRequirement >> verify: anASTNode [
 
-	 ^ anASTNode isSelf 
+	 ^ anASTNode isSelfVariable 
 ]

@@ -80,8 +80,8 @@ MOPInstrumentationInstaller >> install: aMOPInstrumentation onMethod: aRBMethod 
 MOPInstrumentationInstaller >> install: anInstrumentation onNode: aNode [
 
 	| link |
-	aNode hasMetaLinks ifTrue: ['bite' traceCr.^self
-		"self error: ' there is already instrumentation on this node ' "].
+	aNode hasMetaLinks ifTrue: [
+		^ self error: ' there is already instrumentation on this node ' ].
 	link := MetaLink new.
 	link arguments: #( operation ).
 	link control: #instead.
@@ -138,7 +138,14 @@ MOPInstrumentationInstaller >> selfEscapeResolve: aRBMethod proxy: aMOPProxy [
 	| nodes |
 	nodes := aRBMethod ast allChildren select: [ :n | n isSelfVariable ].
 	nodes do: [ :n |
-		self install: (self selfEscapeInstrumentation: aMOPProxy) onNode: n ]
+		|link|
+		link := MetaLink new.
+		link control: #instead.
+		link metaObject: [ aMOPProxy ].
+		link selector: #value.
+		link optionCompileOnLinkInstallation: true.
+		n link: link 
+	]
 ]
 
 { #category : 'instrumentation' }

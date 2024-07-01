@@ -47,21 +47,13 @@ MOPMetaObject >> initialize [
 ]
 
 { #category : 'install' }
-MOPMetaObject >> installOnAnnonymousClass: aRBMethod [
+MOPMetaObject >> installOnAnnonymousClass: aMethod installeur: instrumentationInstalleur [
 
-	(objectAnoClass includesSelector: aRBMethod selector) ifTrue: [
+	(objectAnoClass includesSelector: aMethod selector) ifTrue: [
 		^ self ].
-	objectAnoClass compile: aRBMethod sourceCode
-]
-
-{ #category : 'install' }
-MOPMetaObject >> installOnAnnonymousClass: aRBMethod installeur: instrumentationInstalleur [
-
-	(objectAnoClass includesSelector: aRBMethod selector) ifTrue: [
-		^ self ].
-	instrumentationInstalleur selfEscapeResolve: aRBMethod  proxy: proxy .
-	instrumentationInstalleur superProblemeResolve: aRBMethod.
-	objectAnoClass compile: aRBMethod sourceCode
+	objectAnoClass compile: aMethod sourceCode.
+	instrumentationInstalleur selfEscapeResolve: (objectAnoClass >> aMethod selector) proxy: proxy .
+	instrumentationInstalleur superProblemeResolve: aMethod .
 ]
 
 { #category : 'instrument' }
