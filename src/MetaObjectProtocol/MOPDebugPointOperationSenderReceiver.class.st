@@ -1,5 +1,5 @@
 Class {
-	#name : 'MOPDebugPointOperation',
+	#name : 'MOPDebugPointOperationSenderReceiver',
 	#superclass : 'MOPOperation',
 	#instVars : [
 		'debugPoint'
@@ -10,38 +10,46 @@ Class {
 }
 
 { #category : 'accessing' }
-MOPDebugPointOperation class >> object: anObject [
+MOPDebugPointOperationSenderReceiver class >> object: a receiver: b [
 
 	^ self new
-		  object: anObject;
+		  object: a
+		  receiver: b;
 		  yourself
 ]
 
 { #category : 'accessing' }
-MOPDebugPointOperation >> apply: aRFOperation with: anOrderedCollection [
+MOPDebugPointOperationSenderReceiver >> apply: aRFOperation with: anOrderedCollection [
 
 	debugPoint hitWithContext: thisContext
 ]
 
 { #category : 'testing' }
-MOPDebugPointOperation >> isDebugPointOperation [
+MOPDebugPointOperationSenderReceiver >> isDebugPointOperation [
 
 	^ true
 ]
 
 { #category : 'accessing' }
-MOPDebugPointOperation >> object: anObject [
+MOPDebugPointOperationSenderReceiver >> object: anObject [
 
 	debugPoint := DebugPointManager
 		              installNew: MOPBreakDebugPoint
 		              forMOPProxy: anObject.
 	debugPoint
-"		addBehavior:
-			(ScriptBehavior new script: ' thisContext traceCr');"
 		addBehavior: (ConditionBehavior new condition:
 					 '(thisContext sender findContextSuchThat: [ :ctx |
 	 (#(#isInspector. #isInspection. #class. #isKindOf: . #printString . #asString . #stDisplayString ) includes:
 		  ctx selector) or: [
 		 (ctx receiver isInspector) or: [
 			 ctx receiver isInspection ] ] ]) isNil')
+]
+
+{ #category : 'accessing' }
+MOPDebugPointOperationSenderReceiver >> object: a receiver: b [
+
+	debugPoint := DebugPointManager
+		              installNew: MOPBreakDebugPoint
+		              forMOPProxy: a.
+	debugPoint addBehavior: (ReceiverBehavior new receiver: b)
 ]
