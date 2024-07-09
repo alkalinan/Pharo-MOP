@@ -121,22 +121,13 @@ MOPInstrumentationInstaller >> object: anObject [
 	object := anObject
 ]
 
-{ #category : 'instrumentation' }
-MOPInstrumentationInstaller >> selfEscapeInstrumentation: aMOPProxy [
-
-	| op instrumentation requirement |
-	op := MOPSelfSendOperation proxy: aMOPProxy.
-	instrumentation := MOPInstrumentation new operation: op.
-	requirement := MOPSuperSendRequirement new.
-	instrumentation requirement: requirement.
-	^ instrumentation 
-]
-
 { #category : 'installeur' }
 MOPInstrumentationInstaller >> selfEscapeResolve: aRBMethod proxy: aMOPProxy [
 
 	| nodes |
-	nodes := aRBMethod ast allChildren select: [ :n | n isSelfVariable ].
+	aRBMethod ast containsReturn ifFalse: [ aRBMethod ast addSelfReturn ].
+	nodes := aRBMethod ast allChildren select: [ :n | n isSelfVariable  or: [n isVariable and:[n name = 'self']]].
+	
 	nodes do: [ :n |
 		|link|
 		link := MetaLink new.
@@ -146,6 +137,7 @@ MOPInstrumentationInstaller >> selfEscapeResolve: aRBMethod proxy: aMOPProxy [
 		link optionCompileOnLinkInstallation: true.
 		n link: link 
 	]
+	
 ]
 
 { #category : 'instrumentation' }
