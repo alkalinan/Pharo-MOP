@@ -50,6 +50,12 @@ MOPPersonne >> prenom: anObject [
 ]
 
 { #category : 'accessing' }
+MOPPersonne >> sendMessage: aPersonne [
+	MOPPersonne new age.
+	^ aPersonne prenom 
+]
+
+{ #category : 'accessing' }
 MOPPersonne >> signature [
 	
 	self age.
