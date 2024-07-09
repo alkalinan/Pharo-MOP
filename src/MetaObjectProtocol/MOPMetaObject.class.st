@@ -1,6 +1,6 @@
 Class {
-	#name : #MOPMetaObject,
-	#superclass : #Object,
+	#name : 'MOPMetaObject',
+	#superclass : 'Object',
 	#instVars : [
 		'instrumentations',
 		'object',
@@ -9,18 +9,21 @@ Class {
 		'objectClass',
 		'objectAnoClass'
 	],
-	#category : #'MetaObjectProtocol-base'
+	#category : 'MetaObjectProtocol-base',
+	#package : 'MetaObjectProtocol',
+	#tag : 'base'
 }
 
-{ #category : #adding }
+{ #category : 'adding' }
 MOPMetaObject >> addInstrumentation: anInstrumentation [
 	instrumentations add: anInstrumentation
 ]
 
-{ #category : #'handling DNU' }
+{ #category : 'handling DNU' }
 MOPMetaObject >> handle: aMessage [
 
 	<debuggerCompleteToSender>
+	aMessage traceCr.
 	objectClass ifNotNil: [ :class |
 		(class lookupSelector: aMessage selector) ifNotNil: [ :selector |
 			self instrument: selector ] ].
@@ -31,7 +34,7 @@ MOPMetaObject >> handle: aMessage [
 		  withArguments: aMessage arguments asArray
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 MOPMetaObject >> initialize [
 
 	object := Object new.
@@ -43,91 +46,67 @@ MOPMetaObject >> initialize [
 
 ]
 
-{ #category : #install }
-MOPMetaObject >> installOnAnnonymousClass: aRBMethod [
+{ #category : 'install' }
+MOPMetaObject >> installOnAnnonymousClass: aMethod installeur: instrumentationInstalleur [
 
-	| ast selfCode sourceCode instanceProxy |
-	aRBMethod methodClass = objectAnoClass ifTrue: [ ^ nil ].
-	instanceProxy := 'proxy' , object hash asString.
-	ast := RBParser parseMethod: aRBMethod sourceCode.
-	aRBMethod ast containsReturn
-		ifTrue: [
-			selfCode := (RBReturnNode value: RBVariableNode selfNode)
-				            formattedCode.
-			sourceCode := ast formattedCode
-				              copyReplaceAll: selfCode
-				              with: '^ ' , instanceProxy ]
-		ifFalse: [ sourceCode := ast sourceCode , '. ^ ' , instanceProxy ].
-
-	objectAnoClass compile: sourceCode
+	(objectAnoClass includesSelector: aMethod selector) ifTrue: [
+		^ self ].
+	objectAnoClass compile: aMethod sourceCode.
+	instrumentationInstalleur selfEscapeResolve: (objectAnoClass >> aMethod selector) proxy: proxy .
+	instrumentationInstalleur superProblemeResolve: aMethod .
 ]
 
-{ #category : #instrument }
+{ #category : 'instrument' }
 MOPMetaObject >> instrument: aMethod [
 
 	| instrumentationInstalleur methodNeedToInstall |
 	instrumentationInstalleur := MOPInstrumentationInstaller new.
 	instrumentationInstalleur object: object.
 
-	self installOnAnnonymousClass: aMethod.
-	instrumentationInstalleur superProblemeResolve: aMethod.
+	self installOnAnnonymousClass: aMethod installeur: instrumentationInstalleur .
+	
 
 	methodNeedToInstall := objectAnoClass >> aMethod selector.
 
 
 
-	self instrumentations
-		select: [ :i | i executing not ]
-		thenDo: [ :instrumentation |
-			| nodes |
-			nodes := methodNeedToInstall ast allChildren select: [ :n |
-				         instrumentation requirement verify: n ].
-			nodes := nodes select: [ :n |
-				         n hasMetaLinks
-					         ifTrue: [ n links first metaObject ~= instrumentation ]
-					         ifFalse: [ true ] ].
+	self instrumentations do: [ :instrumentation |
+		| nodes |
+		nodes := methodNeedToInstall ast allChildren select: [ :n |
+			         instrumentation requirement verify: n ].
+		nodes := nodes select: [ :n |
+			         n hasMetaLinks
+				         ifTrue: [ n links first metaObject ~= instrumentation ]
+				         ifFalse: [ true ] ].
 
-			nodes do: [ :n |
-				instrumentationInstalleur install: instrumentation onNode: n ] ]
+		nodes do: [ :n |
+			instrumentationInstalleur install: instrumentation onNode: n ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MOPMetaObject >> instrumentations [
 
 	^ instrumentations 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MOPMetaObject >> object: anObject [
 
-	| instanceProxy |
-	
-	instanceProxy := 'proxy', anObject hash asString.
 	
 	object := anObject.
 	objectClass := anObject class.
 	objectAnoClass := objectClass newAnonymousSubclass.
 	objectAnoClass adoptInstance: anObject.
-	objectAnoClass addSlot: instanceProxy asSymbol  => MOPProxyInstanceVariableSlot 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MOPMetaObject >> protocol [
 
 	^ protocol
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MOPMetaObject >> proxy: aMOPProxy [
 
-	| instanceProxy |
-	
-	instanceProxy := 'proxy', object hash asString.
-
-	proxy := aMOPProxy.
-	"here we put the proxy as an instance variable of the anonymous class, we do this so as not to return self in the methods of the proxied object but to return the proxy. This allows you to capture all the messages and not leave the MOP"
-	MirrorPrimitives
-		fixedFieldOf: object
-		at: (objectAnoClass slotNamed: instanceProxy) index
-		put: aMOPProxy
+	proxy := aMOPProxy
 ]

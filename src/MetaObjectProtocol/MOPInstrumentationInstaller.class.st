@@ -1,14 +1,16 @@
 Class {
-	#name : #MOPInstrumentationInstaller,
-	#superclass : #Object,
+	#name : 'MOPInstrumentationInstaller',
+	#superclass : 'Object',
 	#instVars : [
 		'installedInstrumentation',
 		'object'
 	],
-	#category : #'MetaObjectProtocol-base'
+	#category : 'MetaObjectProtocol-base',
+	#package : 'MetaObjectProtocol',
+	#tag : 'base'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 MOPInstrumentationInstaller class >> for: aMetaObject [
 
 	^ self new
@@ -16,7 +18,7 @@ MOPInstrumentationInstaller class >> for: aMetaObject [
 		  yourself
 ]
 
-{ #category : #instrumentation }
+{ #category : 'instrumentation' }
 MOPInstrumentationInstaller >> compileSuperSendChain: aMethodCollection [
 
 	| methods |
@@ -33,7 +35,7 @@ MOPInstrumentationInstaller >> compileSuperSendChain: aMethodCollection [
 	^ methods
 ]
 
-{ #category : #instrumentation }
+{ #category : 'instrumentation' }
 MOPInstrumentationInstaller >> findSuperSendsChainFor: aMethod [
 
 	| method chain |
@@ -51,13 +53,13 @@ MOPInstrumentationInstaller >> findSuperSendsChainFor: aMethod [
 	^ chain
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 MOPInstrumentationInstaller >> initialize [ 
 
 	installedInstrumentation := Dictionary new.
 ]
 
-{ #category : #installeur }
+{ #category : 'installeur' }
 MOPInstrumentationInstaller >> install: aMOPInstrumentation onMethod: aRBMethod [
 
 	| nodeOfMethodNeedToInstall methodNeedToInstall |
@@ -74,12 +76,12 @@ MOPInstrumentationInstaller >> install: aMOPInstrumentation onMethod: aRBMethod 
 		self install: aMOPInstrumentation onNode: n ]
 ]
 
-{ #category : #installeur }
+{ #category : 'installeur' }
 MOPInstrumentationInstaller >> install: anInstrumentation onNode: aNode [
 
 	| link |
 	aNode hasMetaLinks ifTrue: [
-		self error: ' there is already instrumentation on this node ' ].
+		^ self error: ' there is already instrumentation on this node ' ].
 	link := MetaLink new.
 	link arguments: #( operation ).
 	link control: #instead.
@@ -101,25 +103,44 @@ MOPInstrumentationInstaller >> install: anInstrumentation onNode: aNode [
 		 ifAbsentPut: [ OrderedCollection new ]) add: aNode
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MOPInstrumentationInstaller >> installedInstrumentation [
 
 	^ installedInstrumentation
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 MOPInstrumentationInstaller >> object [
 
 	^ object
 ]
 
-{ #category : #'api - model' }
+{ #category : 'api - model' }
 MOPInstrumentationInstaller >> object: anObject [
 
 	object := anObject
 ]
 
-{ #category : #instrumentation }
+{ #category : 'installeur' }
+MOPInstrumentationInstaller >> selfEscapeResolve: aRBMethod proxy: aMOPProxy [
+
+	| nodes |
+	aRBMethod ast containsReturn ifFalse: [ aRBMethod ast addSelfReturn ].
+	nodes := aRBMethod ast allChildren select: [ :n | n isSelfVariable  or: [n isVariable and:[n name = 'self']]].
+	
+	nodes do: [ :n |
+		|link|
+		link := MetaLink new.
+		link control: #instead.
+		link metaObject: [ aMOPProxy ].
+		link selector: #value.
+		link optionCompileOnLinkInstallation: true.
+		n link: link 
+	]
+	
+]
+
+{ #category : 'instrumentation' }
 MOPInstrumentationInstaller >> superInstrumentation: selector [
 
 	| op instrumentation requirement |
@@ -130,7 +151,7 @@ MOPInstrumentationInstaller >> superInstrumentation: selector [
 	^ instrumentation 
 ]
 
-{ #category : #installeur }
+{ #category : 'installeur' }
 MOPInstrumentationInstaller >> superProblemeResolve: aRBMethod [
 
 	| methodsToInstrument compiledSelectors |
@@ -142,7 +163,7 @@ MOPInstrumentationInstaller >> superProblemeResolve: aRBMethod [
 		self superSendChainInstall: compiledSelectors ]
 ]
 
-{ #category : #installeur }
+{ #category : 'installeur' }
 MOPInstrumentationInstaller >> superSendChainInstall: aDoubleLinkedList [
 
 	aDoubleLinkedList linksDo: [ :link |
@@ -152,7 +173,7 @@ MOPInstrumentationInstaller >> superSendChainInstall: aDoubleLinkedList [
 			onMethod: object class >> link value asSymbol ]
 ]
 
-{ #category : #instrumentation }
+{ #category : 'instrumentation' }
 MOPInstrumentationInstaller >> uninstall: anInstrumentation [
 
 	self flag: 'Todo'.
