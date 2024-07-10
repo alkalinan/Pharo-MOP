@@ -112,8 +112,16 @@ MOPMetaObject >> proxy: aMOPProxy [
 ]
 
 { #category : 'instrumentation' }
-MOPMetaObject >> uninstall: aMOPInstrumentation [ 
+MOPMetaObject >> uninstallInstrumentation: aMOPInstrumentation [ 
 
 	aMOPInstrumentation uninstall .
 	instrumentations remove: aMOPInstrumentation 
+]
+
+{ #category : 'uninstall' }
+MOPMetaObject >> uninstallMOP [
+	
+	instrumentations do: [ :i | i uninstall ].
+	object become: proxy.
+	objectClass adoptInstance: proxy.
 ]

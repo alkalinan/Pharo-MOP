@@ -170,10 +170,3 @@ MOPInstrumentationInstaller >> superSendChainInstall: aDoubleLinkedList [
 			install: (self superInstrumentation: link nextLink value)
 			onMethod: object class >> link value asSymbol ]
 ]
-
-{ #category : 'instrumentation' }
-MOPInstrumentationInstaller >> uninstall: anInstrumentation [
-
-	self flag: 'Todo'.
-	(installedInstrumentation at: anInstrumentation) do: [ :n | n links do: [:l | l uninstall]]
-]

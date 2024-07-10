@@ -60,10 +60,16 @@ MOPProtocol >> node [
 	^ MOPNodeBuilder protocol: self
 ]
 
-{ #category : 'instrumentation' }
-MOPProtocol >> uninstall: aMOPInstrumentation [
+{ #category : 'actions' }
+MOPProtocol >> uninstall [
+	
+	metaObject uninstallMOP .
+]
 
-	metaObject uninstall: aMOPInstrumentation
+{ #category : 'instrumentation' }
+MOPProtocol >> uninstallInstrumentation: aMOPInstrumentation [
+
+	metaObject uninstallInstrumentation: aMOPInstrumentation
 ]
 
 { #category : 'accessing' }

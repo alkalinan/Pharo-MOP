@@ -201,7 +201,7 @@ MOPInstrumentationTest >> testUninstallInstrumentation [
 	
 	self should: [ object isString] raise: Halt.
 	
-	object mop uninstall:  (object mop instrumentations first)  .
+	object mop uninstallInstrumentation:  (object mop instrumentations first)  .
 	
 	result := object isString
 	

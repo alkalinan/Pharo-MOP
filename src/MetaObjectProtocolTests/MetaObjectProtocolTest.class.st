@@ -184,6 +184,23 @@ MetaObjectProtocolTest >> testMOPObjectCentric [
 ]
 
 { #category : 'tests' }
+MetaObjectProtocolTest >> testMOPUninstall [
+
+	| object result |
+	object := Object new.
+	object mop method selector: #isString ; before: MOPHaltOperation new.
+	
+	self should: [ object isString] raise: Halt.
+	
+	object mop uninstall.
+	
+	self assert: object class equals: Object .
+	
+	result := object isString
+	
+]
+
+{ #category : 'tests' }
 MetaObjectProtocolTest >> testMetaLevel [
 
 	| object |
