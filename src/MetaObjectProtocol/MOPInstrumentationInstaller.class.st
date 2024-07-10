@@ -81,7 +81,7 @@ MOPInstrumentationInstaller >> install: anInstrumentation onNode: aNode [
 
 	| link |
 	aNode hasMetaLinks ifTrue: [
-		self error: ' there is already instrumentation on this node ' ].
+		^ self error: ' there is already instrumentation on this node ' ].
 	link := MetaLink new.
 	link arguments: #( operation ).
 	link control: #instead.
@@ -117,6 +117,25 @@ MOPInstrumentationInstaller >> object [
 MOPInstrumentationInstaller >> object: anObject [
 
 	object := anObject
+]
+
+{ #category : 'installeur' }
+MOPInstrumentationInstaller >> selfEscapeResolve: aRBMethod proxy: aMOPProxy [
+
+	| nodes |
+	aRBMethod ast containsReturn ifFalse: [ aRBMethod ast addSelfReturn ].
+	nodes := aRBMethod ast allChildren select: [ :n | n isSelfVariable  or: [n isVariable and:[n name = 'self']]].
+	
+	nodes do: [ :n |
+		|link|
+		link := MetaLink new.
+		link control: #instead.
+		link metaObject: [ aMOPProxy ].
+		link selector: #value.
+		link optionCompileOnLinkInstallation: true.
+		n link: link 
+	]
+	
 ]
 
 { #category : 'instrumentation' }
