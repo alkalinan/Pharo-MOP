@@ -191,3 +191,18 @@ MOPInstrumentationTest >> testMetaObjectInstrumentationInGoodOrder [
 
 	self assert: result equals: 'string :op1op2'
 ]
+
+{ #category : 'tests' }
+MOPInstrumentationTest >> testUninstallInstrumentation [
+
+	| object result |
+	object := Object new.
+	object mop method selector: #isString ; before: MOPHaltOperation new.
+	
+	self should: [ object isString] raise: Halt.
+	
+	object mop uninstall:  (object mop instrumentations first)  .
+	
+	result := object isString
+	
+]

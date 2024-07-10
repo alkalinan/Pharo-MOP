@@ -137,3 +137,9 @@ MOPInstrumentation >> requirement: aRequirement [
 	
 	requirement := aRequirement 
 ]
+
+{ #category : 'actions' }
+MOPInstrumentation >> uninstall [
+
+	nodes do: [ :n | n removeLink: n links first ]
+]

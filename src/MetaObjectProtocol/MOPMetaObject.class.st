@@ -110,3 +110,10 @@ MOPMetaObject >> proxy: aMOPProxy [
 
 	proxy := aMOPProxy
 ]
+
+{ #category : 'instrumentation' }
+MOPMetaObject >> uninstall: aMOPInstrumentation [ 
+
+	aMOPInstrumentation uninstall .
+	instrumentations remove: aMOPInstrumentation 
+]

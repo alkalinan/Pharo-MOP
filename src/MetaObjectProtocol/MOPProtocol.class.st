@@ -19,6 +19,12 @@ MOPProtocol >> addInstrumentation: anInstrumentation [
 ]
 
 { #category : 'accessing' }
+MOPProtocol >> instrumentations [
+
+	^ metaObject instrumentations
+]
+
+{ #category : 'accessing' }
 MOPProtocol >> listOfInstrumentation [
 
 	metaObject instrumentations size asString traceCr.
@@ -52,6 +58,12 @@ MOPProtocol >> method [
 MOPProtocol >> node [
 
 	^ MOPNodeBuilder protocol: self
+]
+
+{ #category : 'instrumentation' }
+MOPProtocol >> uninstall: aMOPInstrumentation [
+
+	metaObject uninstall: aMOPInstrumentation
 ]
 
 { #category : 'accessing' }
