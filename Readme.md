@@ -8,6 +8,17 @@ The project here is to develop an object-granular debugging tool called MOP for 
 The goal of MOP is to be able to instrument specific objects and modify their behaviour.
 
 
+## Metacello
+```ST
+Metacello new
+  repository: 'github://RemiDufloer/Pharo-MOP:main/src';
+  baseline: 'MetaObjectProtocol';
+  onConflict: [ :ex | ex useIncoming ];
+  onUpgrade: [ :ex | ex useIncoming ];
+  ignoreImage; 
+  load
+```
+
 ## How to ?
 
 Let's look at an example of how to use MOP :
